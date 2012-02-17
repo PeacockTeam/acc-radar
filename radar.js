@@ -17,6 +17,7 @@ var Sampler = (function() {
 
     return {
         init: function(data) {
+            /* convert to valid data */
             samples = data.map(function(e) {
                 return {
                     acc: {
@@ -27,6 +28,29 @@ var Sampler = (function() {
                     timestamp: 1000 * e.timestamp
                 };
             });
+
+            /* slice middle */
+            samples = (function() { 
+                var res = samples.slice();
+
+                var k = 15;
+                for (var i = 0; i < samples.length - 1; i++) {
+                    
+                    var sum_x = 0,
+                        sum_y = 0;
+                    
+                    var slice = samples.slice(Math.max(0, i - k), Math.min(samples.length - 1, i + k));
+                    slice.forEach(function(e) {
+                        sum_x += e.acc.x;
+                        sum_y += e.acc.y;
+                    });
+
+                    res[i].acc.x = sum_x / slice.length; 
+                    res[i].acc.y = sum_y / slice.length;
+                }
+                return res;
+            })();
+            console.log(samples);
 
             this.reset();
         },
