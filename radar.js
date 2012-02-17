@@ -17,6 +17,7 @@ var Sampler = (function() {
 
     return {
         init: function(data) {
+
             /* convert to valid data */
             samples = data.map(function(e) {
                 return {
@@ -39,7 +40,7 @@ var Sampler = (function() {
                     var sum_x = 0,
                         sum_y = 0;
                     
-                    var slice = samples.slice(Math.max(0, i - k), Math.min(samples.length - 1, i + k));
+                    var slice = samples.slice(Math.max(0, i - k), Math.min(samples.length, i + k + 1));
                     slice.forEach(function(e) {
                         sum_x += e.acc.x;
                         sum_y += e.acc.y;
@@ -50,7 +51,6 @@ var Sampler = (function() {
                 }
                 return res;
             })();
-            console.log(samples);
 
             this.reset();
         },
