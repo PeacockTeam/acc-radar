@@ -1,5 +1,3 @@
-var ctx;
-var timer;
 
 var Sampler = (function() {
     
@@ -22,8 +20,8 @@ var Sampler = (function() {
             samples = data.map(function(e) {
                 return {
                     acc: {
-                        x: 1000 * parseFloat(e.acc.x),
-                        y: 1000 * parseFloat(e.acc.y)
+                        x: parseFloat(e.acc.x) * 9.8,
+                        y: parseFloat(e.acc.y) * 9.8
                     },
                     gps: {
                         direction: parseFloat(e.gps.direction), 
@@ -39,7 +37,7 @@ var Sampler = (function() {
                     return $.extend(true, {}, e);
                 }); // Making deep copy
 
-                var k = 15;
+                var k = 3;
                 for (var i = 0; i < samples.length; i++) {
                     
                     var sum_x = 0,
@@ -57,6 +55,11 @@ var Sampler = (function() {
                 return res;
             })();
 
+            samples.forEach(function(s) {
+                s.acc.a = Math.sqrt(Math.pow(s.acc.x, 2) + Math.pow(s.acc.y, 2));
+            });
+
+            console.log(samples);
             this.reset();
         },
     
@@ -84,16 +87,110 @@ var Sampler = (function() {
     };
 })();
 
+var Drawer = (function() {
+    var ctx;
+
+    var center_x = 512,
+        center_y = 512;
+
+    function drawBG() {
+        ctx.beginPath();
+        ctx.arc(center_x, center_y, 500, 0, Math.PI*2, true);
+        ctx.fillStyle = "grey";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle="black";
+        ctx.stroke();
+        ctx.closePath();
+        
+        function drawLabelCircle(width) {
+            /* Circle */
+            ctx.beginPath();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle="black";
+            ctx.arc(center_x, center_y, width, 0, Math.PI*2, true);
+            ctx.stroke();
+            ctx.closePath();
+
+            /* Caption */
+            ctx.beginPath();
+            ctx.fillStyle = 'black';
+            ctx.font = '15px sans-serif';
+            ctx.textBaseline = 'top';
+            ctx.fillText(width / 100 + ' m/s', center_x + width + 5, center_y);
+            ctx.closePath();
+        }
+        drawLabelCircle(100);
+        drawLabelCircle(200);
+        drawLabelCircle(300);
+    }
+
+    return {
+        draw: function(sample) {
+            drawBG();
+
+            var gps_caption = sample.gps.speed + " m/s" ,
+                gps_x = center_x + Math.sin(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 15,
+                gps_y = center_y - Math.cos(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 15;
+
+            var acc_caption = sample.acc.a.toFixed(2) + " m/s",
+                acc_x = center_x + 100 * sample.acc.x,
+                acc_y = center_y - 100 * sample.acc.y;
+
+            /* Draw GPS vector */
+            ctx.beginPath();
+            ctx.moveTo(center_x, center_y);
+            ctx.lineTo(gps_x, gps_y);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "blue";
+            ctx.stroke();
+            ctx.closePath();
+            
+            /* Draw GPS caption */
+            ctx.beginPath();
+            ctx.fillStyle = 'black';
+            ctx.font = '20px sans-serif';
+            ctx.textBaseline = 'top';
+            ctx.fillText(gps_caption, gps_x, gps_y);
+            ctx.closePath();
+
+            /* Draw Acc vector */
+            ctx.beginPath();
+            ctx.moveTo(center_x, center_y);
+            ctx.lineTo(acc_x, acc_y);
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "red";
+            ctx.stroke();
+            ctx.closePath();
+            
+            /* Draw Acc caption */
+            ctx.beginPath();
+            ctx.fillStyle = 'black';
+            ctx.font = '30px sans-serif';
+            ctx.textBaseline = 'top';
+            ctx.fillText(acc_caption, acc_x, acc_y);
+            ctx.closePath();
+        },
+
+        init: function() {
+            ctx = $('#canvas')[0].getContext("2d");
+            drawBG();
+        }
+    };
+})();
+
+
+var timer;
+
 $().ready(function () {
-    ctx = $('#canvas')[0].getContext("2d");
+    Sampler.init(data);
+    Drawer.init();
+    
     $('#canvas').click(function() {
         if (!timer) {
             play();
         }
     });
-
-    Sampler.init(data);
-    drawBG();
 });
 
 function play() {
@@ -109,7 +206,7 @@ function render() {
     if (Sampler.hasMore()) {
         var sample = Sampler.getNextSample();
         if (sample) {
-            draw(sample); 
+            Drawer.draw(sample); 
         }
         play();
     } else {
@@ -118,34 +215,3 @@ function render() {
     }
 }
 
-function draw(sample) {
-    drawBG();
-    
-    ctx.beginPath();
-    ctx.moveTo(512, 512);
-    ctx.lineTo(512 + sample.acc.x, 512 - sample.acc.y);
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = "red";
-    ctx.stroke();
-    ctx.closePath();
-  
-    ctx.beginPath();
-    ctx.moveTo(512, 512);
-    ctx.lineTo(
-        512 + Math.sin(sample.gps.direction * Math.PI / 180) * sample.gps.speed,
-        512 - Math.cos(sample.gps.speed * Math.PI / 180) * sample.gps.speed * 10);
-
-    ctx.strokeStyle = "blue";
-    ctx.stroke();
-    ctx.closePath();
-}
-
-function drawBG() {
-    ctx.beginPath();
-    ctx.arc(512, 512, 500, 0, Math.PI*2, true);
-    ctx.fillStyle = "grey";
-    ctx.fill();
-    ctx.strokeStyle="grey";
-    ctx.stroke();
-    ctx.closePath();
-}
