@@ -22,20 +22,25 @@ var Sampler = (function() {
             samples = data.map(function(e) {
                 return {
                     acc: {
-                        x: 1000 * e.acc.accX,
-                        y: 1000 * e.acc.accY
+                        x: 1000 * parseFloat(e.acc.x),
+                        y: 1000 * parseFloat(e.acc.y)
                     },
-                    gps: e.gps, 
-                    timestamp: 1000 * e.timestamp
+                    gps: {
+                        direction: parseFloat(e.gps.direction), 
+                        speed: parseFloat(e.gps.speed)
+                    },
+                    timestamp: parseInt(e.timestamp)
                 };
             });
-
+            
             /* slice middle */
             samples = (function() { 
-                var res = samples.slice();
+                var res = samples.map(function(e) {
+                    return $.extend(true, {}, e);
+                }); // Making deep copy
 
                 var k = 15;
-                for (var i = 0; i < samples.length - 1; i++) {
+                for (var i = 0; i < samples.length; i++) {
                     
                     var sum_x = 0,
                         sum_y = 0;
