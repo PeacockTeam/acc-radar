@@ -44,6 +44,33 @@ var Filter = {
             var a = Math.sqrt(Math.pow(s.acc.x, 2) + Math.pow(s.acc.y, 2));
             return $.extend(true, { acc: {'a' : a }}, s);
         });
+    },
+
+    moveAtoms: function(samples) {
+        /* turnings */
+
+        var atoms = [];
+
+        var atom = undefined;
+        var threshhold = 0.3;
+
+        samples.forEach(function(s) {
+            if (s.acc.y > threshhold) {
+                if (!atom) {
+                    atom = {
+                        start_time: s.timestamp,
+                    };
+                }
+
+                // do smth
+            } else if (atom) {
+                atom.end_time = s.timestamp;
+                atoms.push(atom);
+                atom = undefined;
+            }
+        });
+
+        return atoms;
     }
 };
 
@@ -91,20 +118,17 @@ var Sampler = (function() {
     };
 })();
 
-var Drawer = (function() {
+var Radar = (function() {
     var ctx;
 
-    var center_x = 512,
-        center_y = 512;
+    var center_x = 450,
+        center_y = 450;
 
     function drawBG() {
         ctx.beginPath();
-        ctx.arc(center_x, center_y, 500, 0, Math.PI*2, true);
-        ctx.fillStyle = "grey";
+        ctx.arc(center_x, center_y, 450, 0, Math.PI*2, true);
+        ctx.fillStyle = "white";
         ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle="black";
-        ctx.stroke();
         ctx.closePath();
         
         function drawLabelCircle(width) {
@@ -127,6 +151,7 @@ var Drawer = (function() {
         drawLabelCircle(100);
         drawLabelCircle(200);
         drawLabelCircle(300);
+        drawLabelCircle(400);
     }
 
     return {
@@ -134,8 +159,8 @@ var Drawer = (function() {
             drawBG();
 
             var gps_caption = sample.gps.speed + " m/s" ,
-                gps_x = center_x + Math.sin(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 15,
-                gps_y = center_y - Math.cos(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 15;
+                gps_x = center_x + Math.sin(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 2,
+                gps_y = center_y - Math.cos(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 2;
 
             var acc_caption = sample.acc.a.toFixed(2) + " m/s",
                 acc_x = center_x + 100 * sample.acc.x,
@@ -189,11 +214,14 @@ var timer;
 $().ready(function () {
 
     var samples = Filter.parse(data);
-    samples = Filter.movingAverage(samples, 30);
+    samples = Filter.movingAverage(samples, 15);
     samples = Filter.accModule(samples);
 
+//    var atoms = Filter.moveAtoms(samples);
+ //   console.log(atoms);
+
     Sampler.init(samples);
-    Drawer.init();
+    Radar.init();
     
     $('#canvas').click(function() {
         if (!timer) {
@@ -215,7 +243,7 @@ function render() {
     if (Sampler.hasMore()) {
         var sample = Sampler.getNextSample();
         if (sample) {
-            Drawer.draw(sample); 
+            Radar.draw(sample); 
         }
         play();
     } else {
