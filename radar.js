@@ -44,33 +44,6 @@ var Filter = {
             var a = Math.sqrt(Math.pow(s.acc.x, 2) + Math.pow(s.acc.y, 2));
             return $.extend(true, { acc: {'a' : a }}, s);
         });
-    },
-
-    moveAtoms: function(samples) {
-        /* turnings */
-
-        var atoms = [];
-
-        var atom = undefined;
-        var threshhold = 0.3;
-
-        samples.forEach(function(s) {
-            if (s.acc.y > threshhold) {
-                if (!atom) {
-                    atom = {
-                        start_time: s.timestamp,
-                    };
-                }
-
-                // do smth
-            } else if (atom) {
-                atom.end_time = s.timestamp;
-                atoms.push(atom);
-                atom = undefined;
-            }
-        });
-
-        return atoms;
     }
 };
 
@@ -208,8 +181,11 @@ var Radar = (function() {
     };
 })();
 
+/* Main script */
 
 var timer;
+
+var accEvents;
 
 $().ready(function () {
 
@@ -217,8 +193,7 @@ $().ready(function () {
     samples = Filter.movingAverage(samples, 15);
     samples = Filter.accModule(samples);
 
-//    var atoms = Filter.moveAtoms(samples);
- //   console.log(atoms);
+    accEvents = getAccEvents(samples);
 
     Sampler.init(samples);
     Radar.init();

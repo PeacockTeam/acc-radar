@@ -1,97 +1,67 @@
-var Model = (function () {
-    var samples = [],
-        acc_events = [],
-        drive_events = [],
-        special_events = [];
-   
-    var basicAccEventRecorder = (function() {
-        var is_happening = false,
-            start_index = 0,
-            current_index = 0;
-
-        var basicAccEventModel = (function() {
-            return {
-                getStartIndex: function() {
-                    return start_index;
-                },
-                
-                getStopIndex: function() {
-                    return stop_index;
-                }
-            };
-        });
-
-        return {
-            basicAccEventModel: basicAccEventModel; 
-
-            start_event: function(sample_index) {
-                start_index = sample_index;
-                is_happening = true;
-            },
-
-            stop_event: function(sample_index) {
-                return {
-                    type: this.type,
-                    start_index: start_index,
-                    stop_index: sample_index,
-                };
-            }
-        };
-    });
-
-    var frontAccEventRecorder = (function() {
-        var threshhold = 0.3;
-        
-        return {
-            type: 'front',
-
-            must_happen: function(s) {
-                return s.acc.x > threshhold; 
-            }
-        };
-
-    });
-
-    var frontAccEventModel = _.extend(basicAccEventModel(), (function() {
-        var threshhold = 0.3;
-        return {
-            type: 'front',
-
-            must_happen: function(s) {
-                return s.acc.x > threshhold; 
-            }
-        };
-    })());
-    
-    basicEventsModels = [];
+var createEventRecorder = (function(eventType, predicate) {
+    var start_index = undefined;
 
     return {
+        must_happen: predicate, 
         
-        init: function(data) {
-            samples = data;
+        is_happening: function() {
+            return start_index != undefined;
         },
-        
-        getBasicEvents: function() {
 
-            
-            samples.forEach(function(s) {
-                
-                basicEventsModels.forEach(m) {
-                    if (m.isIn(s)) {
+        start: function(index) {
+            start_index = index; 
+        },
 
-
-                    }
+        stop: function(index) {
+            var newEvent = (function() {
+                return {
+                    eventType: eventType,
+                    start_index: start_index,
+                    stop_index: index 
                 };
-
-            });
-
-            return [];
-        },
-        
-        getDriveEvents: function(samples) {
-
-
-            return [];
+            })();
+            start_index = undefined; 
+            return newEvent;
         }
     };
 });
+
+function getAccEvents(samples) {
+    var events = [],
+        recorders = [];
+    
+    var treshhold = 0.3;
+
+    recorders.push(createEventRecorder("leftAccEvent", function(sample) {
+        return sample.acc.x < -treshhold;
+    }));
+
+    recorders.push(createEventRecorder("rigthAccEvent", function(sample) {
+        return sample.acc.x > treshhold;
+    }));
+    
+    recorders.push(createEventRecorder("fronAccEvent", function(sample) {
+        return sample.acc.y > treshhold;
+    }));
+
+    recorders.push(createEventRecorder("backAccEvent", function(sample) {
+        return sample.acc.y < -treshhold;
+    }));
+
+    samples.forEach(function(sample, i) {
+        
+        recorders.forEach(function(recorder) {
+            if (recorder.must_happen(sample)) {
+                if (!recorder.is_happening()) {
+                    recorder.start(i);       
+                }
+            } else if (recorder.is_happening()) {
+                events.push(recorder.stop(i));
+            }
+        });
+    
+    });
+
+    return events;
+}
+
