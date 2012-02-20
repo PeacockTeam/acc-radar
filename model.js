@@ -15,7 +15,7 @@ var createEventRecorder = (function(eventType, predicate) {
         stop: function(index) {
             var newEvent = (function() {
                 return {
-                    eventType: eventType,
+                    type: eventType,
                     start_index: start_index,
                     stop_index: index 
                 };
@@ -25,6 +25,7 @@ var createEventRecorder = (function(eventType, predicate) {
         }
     };
 });
+
 
 function getAccEvents(samples) {
     var events = [],
@@ -40,7 +41,7 @@ function getAccEvents(samples) {
         return sample.acc.x > treshhold;
     }));
     
-    recorders.push(createEventRecorder("fronAccEvent", function(sample) {
+    recorders.push(createEventRecorder("frontAccEvent", function(sample) {
         return sample.acc.y > treshhold;
     }));
 
@@ -61,7 +62,121 @@ function getAccEvents(samples) {
         });
     
     });
+    
+    recorders.forEach(function(recorder) {
+        if (recorder.is_happening()) {
+            events.push(recorder.stop(samples.length - 1));
+        }
+    });
 
     return events;
 }
 
+/*
+Acceleration: 0,35G-0,4G - Moderate; Hard 0,4G-0,5G; Extreem> 0,5G
+Braking: Moderate- 0,4G-0,6G; Hard 0,6G-0,7G; Extreem> 0,7G
+Cornering: Moderate 0,45G-0,6G; Hard 0,6-0,75; Extreem>0,75G
+*/
+
+function getAccEventDetalization(accEvent, samples) {
+    var t1 = samples[accEvent.start_index].timestamp,
+        t2 = samples[accEvent.stop_index].timestamp,
+        duration = t2 - t1,
+        slice = samples.slice(accEvent.start_index, accEvent.stop_index);
+
+    var type = "none",
+        average = 0,
+        severity = "none";
+
+    function getAverage(value) {
+        var sum = 0;
+        slice.forEach(function(sample) {
+            sum += value(sample);
+        });
+        return sum / slice.length;
+    }
+
+    if (accEvent.type == "frontAccEvent") {
+        
+        /* braking */
+        
+        type = "braking";
+        average = getAverage(function(sample) { return Math.abs(sample.acc.y); });
+        
+        if (0.4 < average && average < 0.6) {
+            severity = "m";
+        } else if (0.6 <= average && average < 0.7) {
+            severity = "h";
+        } else if (0.7 <= average) {
+            severity = "e";
+        }
+
+    } else if (accEvent.type == "backAccEvent") {
+
+        /* Acceleration */
+        
+        type = "acceleration";
+        average = getAverage(function(sample) { return Math.abs(sample.acc.y); });
+
+        if (0.35 < average && average < 0.4) {
+            severity = "m";
+        } else if (0.4 <= average && average < 0.5) {
+            severity = "h";
+        } else if (0.5 <= average) {
+            severity = "e";
+        }
+
+    } else if (accEvent.type == "leftAccEvent" || accEvent.type == "rigthAccEvent") {
+        
+        /* Cornering */
+        
+        type = "cornering";
+        average = getAverage(function(sample) { return Math.abs(sample.acc.x); });
+
+        if (0.45 < average && average < 0.6) {
+            severity = "m";
+        } else if (0.6 <= average && average < 0.7) {
+            severity = "h";
+        } else if (0.7 <= average) {
+            severity = "e";
+        }
+    }
+
+    return {
+        type: type,
+        acc: average,
+        severity: severity, 
+        duration: duration
+    };
+}
+
+
+function getReport(accEvents) {
+    
+    var report = {
+        accelerations: { m: 0, h: 0, e: 0 }, 
+        brakings: { m: 0, h: 0, e: 0 }, 
+        cornerings: { m: 0, h: 0, e: 0 }
+    };
+
+    accEvents.forEach(function(accEvent) {
+        var detalization = accEvent.detalization;
+
+        if (detalization.severity == "none") return;
+
+        switch (detalization.type) {
+        case 'acceleration':
+            report.accelerations[detalization.severity]++;
+            break;
+        case 'braking':
+            report.brakings[detalization.severity]++;
+            break;
+        case 'cornering':
+            report.cornerings[detalization.severity]++;
+            break;
+        }
+    });
+    console.log(report);
+
+    return report;
+}
