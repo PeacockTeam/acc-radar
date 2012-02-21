@@ -176,7 +176,6 @@ function getReport(accEvents) {
             break;
         }
     });
-    console.log(report);
 
     return report;
 }

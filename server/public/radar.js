@@ -2,8 +2,8 @@
 var Radar = (function() {
     var ctx;
 
-    var center_x = 450,
-        center_y = 450;
+    var center_x = 400,
+        center_y = 300;
 
     function drawBG() {
         ctx.beginPath();
@@ -32,7 +32,6 @@ var Radar = (function() {
         drawLabelCircle(100);
         drawLabelCircle(200);
         drawLabelCircle(300);
-        drawLabelCircle(400);
     }
 
     return {
@@ -84,6 +83,10 @@ var Radar = (function() {
 
         init: function() {
             ctx = $('#canvas')[0].getContext("2d");
+            drawBG();
+        },
+
+        clear: function() {
             drawBG();
         }
     };
