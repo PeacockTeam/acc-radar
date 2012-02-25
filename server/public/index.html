@@ -2,46 +2,55 @@
 <html>
     <head>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
         <script src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
         
         <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css"></link>
 
-        <script src="./main.js"></script>
-        <script src="./filter.js"></script>
-        <script src="./radar.js"></script>
-        <script src="./model.js"></script>
+        <script src="main.js"></script>
+        <script src="filter.js"></script>
+        <script src="radar.js"></script>
+        <script src="model.js"></script>
     </head>
     <body>
+
+
 
         <div class="row">
 
             <div class="offset1 span6">
-                <div> 
+                
+                <div style="margin: 10"> 
                     <input type="file" id="file" name="file" style="float:left; padding: 10" />
                 </div>
 
                 <br/>
+                <br/>
 
-                <div style="padding: 10">
-                    <h2>Accelerations</h2>
-                    M - <span id='acc-m'>0</span> <br/>
-                    H - <span id='acc-h'>0</span> <br/>
-                    E - <span id='acc-e'>0</span> <br/>
+                <div style="margin: 10">
+                    
+                    <script id="acc-event-total-score-tmpl" type="text/x-jquery-tmpl">
+                        <li>
+                            <h2>${name}</h2>
+                            M - <span>${m}</span> <br/>
+                            H - <span>${h}</span> <br/>
+                            E - <span>${e}</span> <br/>
+                        </li>
+                    </script>
 
-                    <h2>Breakings</h2>
-                    M - <span id='break-m'>0</span> <br/>
-                    H - <span id='break-h'>0</span> <br/>
-                    E - <span id='break-e'>0</span> <br/>
-
-                    <h2>Cornerings</h2>
-                    M - <span id='corn-m'>0</span> <br/>
-                    H - <span id='corn-h'>0</span> <br/>
-                    E - <span id='corn-e'>0</span> <br/>
+                    <ul id="report-entries" style="list-style-type: none"></ul> 
                 </div>
+
             </div>
 
             <div class="span8">
                 <canvas id="canvas" width="800", height="600"></canvas>
+                <center>
+                    <img id="event-left-cornering" src="http://www.freebyte.com/img34/gallery/arrows/2arrow3.gif" height="50" width="50" style="display: none"/> 
+                    <img id="event-acceleration" src="http://www.freebyte.com/img34/gallery/arrows/2arrow2.gif" height="50" width="50" style="display: none"/>
+                    <img id="event-braking" src="http://www.freebyte.com/img34/gallery/arrows/2arrow1.gif" height="50" width="50" style="display: none"/>
+                    <img id="event-right-cornering" src="http://www.freebyte.com/img34/gallery/arrows/2arrow4.gif" height="50" width="50" style="display: none"/>
+                </center>
             </div>
 
         </div>

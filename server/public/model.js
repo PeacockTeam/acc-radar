@@ -48,6 +48,12 @@ function getAccEvents(samples) {
     recorders.push(createEventRecorder("backAccEvent", function(sample) {
         return sample.acc.y < -treshhold;
     }));
+  
+    /*
+    recorders.push(createEventRecorder("speedExceedingEvent", function(sample) {
+        return sample.gps.speed > 60;
+    }));
+    */
 
     samples.forEach(function(sample, i) {
         
@@ -70,6 +76,19 @@ function getAccEvents(samples) {
     });
 
     return events;
+}
+
+function linkEventsWithSamples(accEvents, samples) {
+    accEvents.forEach(function(accEvent) {
+        samples
+            .slice(accEvent.start_index, accEvent.stop_index)
+            .forEach(function(sample) {
+                if (!sample.events) {
+                    sample.events = [];
+                }
+                sample.events.push(accEvent);
+            });
+    });
 }
 
 /*
@@ -141,7 +160,6 @@ function getAccEventDetalization(accEvent, samples) {
             severity = "e";
         }
     }
-
     return {
         type: type,
         acc: average,

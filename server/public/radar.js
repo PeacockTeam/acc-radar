@@ -26,7 +26,7 @@ var Radar = (function() {
             ctx.fillStyle = 'black';
             ctx.font = '15px sans-serif';
             ctx.textBaseline = 'top';
-            ctx.fillText(width / 100 + ' m/s', center_x + width + 5, center_y);
+            ctx.fillText(width / 100 + ' m/s^2', center_x + width + 5, center_y);
             ctx.closePath();
         }
         drawLabelCircle(100);
@@ -42,7 +42,7 @@ var Radar = (function() {
                 gps_x = center_x + Math.sin(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 2,
                 gps_y = center_y - Math.cos(sample.gps.direction * Math.PI / 180) * sample.gps.speed * 2;
 
-            var acc_caption = sample.acc.a.toFixed(2) + " m/s",
+            var acc_caption = sample.acc.a.toFixed(2) + " m/s^2",
                 acc_x = center_x + 100 * sample.acc.x,
                 acc_y = center_y - 100 * sample.acc.y;
 

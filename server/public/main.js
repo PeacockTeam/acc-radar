@@ -47,6 +47,49 @@ var Sampler = (function() {
     };
 })();
 
+var CurrentEventsView = (function() {
+    function getElement(accEvent) {
+        switch (accEvent.type) {
+            case "frontAccEvent": return $("#event-braking")
+            case "backAccEvent": return $("#event-acceleration")
+            case "rigthAccEvent": return $("#event-left-cornering")
+            case "leftAccEvent": return $("#event-right-cornering")
+        }
+    }
+
+    function hideAll() {
+        $("#event-braking").hide();
+        $("#event-acceleration").hide();
+        $("#event-right-cornering").hide();
+        $("#event-left-cornering").hide();
+    }
+
+    return {
+        showEvents: function(accEvents) {
+            hideAll();
+            accEvents.forEach(function(accEvent) {
+                getElement(accEvent).show();
+            });
+        } 
+    };
+})();
+
+var ReportView = {
+    showReport: function(report) {
+
+        $('#report-entries').empty();
+        
+        function addReportEntry(templData) {
+            $("#acc-event-total-score-tmpl")
+                .tmpl(templData)
+                .appendTo( "#report-entries" );
+        }
+
+        addReportEntry(_.extend(report.accelerations, { name: "Accelerations" }));
+        addReportEntry(_.extend(report.brakings, { name: "Brakings" }));
+        addReportEntry(_.extend(report.cornerings, { name: "Cornerings" }));
+    }
+};
 
 /* Main script */
 
@@ -96,19 +139,10 @@ function proccessData(data) {
 
     /* Get report */
     var report = getReport(accEvents);
-    (function() {
-        $('#acc-m').text(report.accelerations.m);
-        $('#acc-h').text(report.accelerations.h);
-        $('#acc-e').text(report.accelerations.e);
-        $('#break-m').text(report.brakings.m);
-        $('#break-h').text(report.brakings.h);
-        $('#break-e').text(report.brakings.e);
-        $('#corn-m').text(report.cornerings.m);
-        $('#corn-h').text(report.cornerings.h);
-        $('#corn-e').text(report.cornerings.e);
-    })();
-    
+    ReportView.showReport(report);
+
     /* Ready to play */
+    linkEventsWithSamples(accEvents, samples);
     Radar.clear();
     Sampler.init(samples);
 }
@@ -126,7 +160,10 @@ function render() {
     if (Sampler.hasMore()) {
         var sample = Sampler.getNextSample();
         if (sample) {
+            
+            /* Refresh radar */
             Radar.draw(sample); 
+            CurrentEventsView.showEvents(sample.events || []);
         }
         play();
     } else {
