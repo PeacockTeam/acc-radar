@@ -99,6 +99,7 @@ $().ready(function() {
    
     /* Init radar */
     Radar.init();
+
     $('#canvas').click(function() {
         if (!timer && Sampler.is_initialized()) {
             play();
@@ -125,7 +126,7 @@ $().ready(function() {
 var accEvents;
 
 function proccessData(data) {
-
+    
     /* Apply filters */
     var samples = Filter.parse(data);
     samples = Filter.movingAverage(samples, 15);
@@ -145,6 +146,7 @@ function proccessData(data) {
     linkEventsWithSamples(accEvents, samples);
     Radar.clear();
     Sampler.init(samples);
+    play();
 }
 
 function play() {
