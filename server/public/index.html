@@ -8,13 +8,14 @@
         <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css"></link>
 
         <script src="main.js"></script>
-        <script src="filter.js"></script>
-        <script src="radar.js"></script>
-        <script src="model.js"></script>
+        <script src="sampler.js"></script>
+        <script src="model/model.js"></script>
+        <script src="model/filter.js"></script>
+        <script src="model/profile.js"></script>
+        <script src="views/radar.js"></script>
+        <script src="views/views.js"></script>
     </head>
     <body>
-
-
 
         <div class="row">
 
@@ -29,12 +30,27 @@
 
                 <div style="margin: 10">
                     
-                    <script id="acc-event-total-score-tmpl" type="text/x-jquery-tmpl">
+                    <script id="time-tmpl" type="text/x-jquery-tmpl">
+                        <li>
+                            <h2>Time</h2>
+                            <p>Start: ${start}</p>
+                            <p>Stop: ${stop}</p>
+                        </li>
+                    </script>
+
+                    <script id="acc-event-severity-score-tmpl" type="text/x-jquery-tmpl">
                         <li>
                             <h2>${name}</h2>
                             M - <span>${m}</span> <br/>
                             H - <span>${h}</span> <br/>
                             E - <span>${e}</span> <br/>
+                        </li>
+                    </script>
+                    
+                    <script id="acc-event-total-score-tmpl" type="text/x-jquery-tmpl">
+                        <li>
+                            <h2>Total score</h2>
+                            <span>${score}</span>
                         </li>
                     </script>
 
@@ -50,6 +66,8 @@
                     <img id="event-acceleration" src="http://www.freebyte.com/img34/gallery/arrows/2arrow2.gif" height="50" width="50" style="display: none"/>
                     <img id="event-braking" src="http://www.freebyte.com/img34/gallery/arrows/2arrow1.gif" height="50" width="50" style="display: none"/>
                     <img id="event-right-cornering" src="http://www.freebyte.com/img34/gallery/arrows/2arrow4.gif" height="50" width="50" style="display: none"/>
+                    <img id="event-speed" src="http://www.pacifichost.com/images/speed_icon.jpg" height="50" width="50" style="display: none"/>
+                    <img id="event-snatch-phone" src="http://www.iphone4jailbreaks.com/wp-content/uploads/2011/09/error2.png" height="50" width="50" style="display: none"/>
                 </center>
             </div>
 

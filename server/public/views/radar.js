@@ -1,5 +1,5 @@
 
-var Radar = (function() {
+var RadarView = (function() {
     var ctx;
 
     var center_x = 400,
@@ -35,7 +35,7 @@ var Radar = (function() {
     }
 
     return {
-        draw: function(sample) {
+        showSample: function(sample) {
             drawBG();
 
             var gps_caption = sample.gps.speed + " m/s" ,
